@@ -84,8 +84,8 @@ def prime_range(B):
 
 
 def sieve(b, initial_sieve):
-    result = []
     N_req = nthroot_mod(N, 2, b, True)
+    result = []
     if len(N_req) == 0:
         return None
     for j in initial_sieve:
@@ -124,16 +124,16 @@ def count_sieve(prime_powers, original_sieve, changed_sieve, factor_list):
     return sorted(B_nums), B_nums_factors
 
 
+def count_factor(i, j):
+    return B_nums_factors[j].count(i) % 2
+
+
 def vectorize(primerange, B_nums, B_nums_factors):
+    vectorized_count_factor = np.vectorize(count_factor)
     factor_list = {}
-    result = []
     for i in primerange:
-        factor_list[i] = []
-        for j in B_nums:
-            factor_list[i].append(B_nums_factors[j].count(i) % 2)
-    for i in factor_list:
-        result.append(factor_list[i])
-    return np.array(result, dtype=np.uint8)
+        factor_list[i] = vectorized_count_factor(i, B_nums)
+    return np.array(list(factor_list.values()), dtype=np.uint8)
 
 
 def factors_multiplication(index_list, b_list, factor_list):
@@ -156,7 +156,6 @@ def factors_multiplication(index_list, b_list, factor_list):
 
 
 def factorization(matrix):
-    indexes = []
     for i in range(len(matrix[0])):
         if i > len(matrix):
             matrix = np.concatenate((matrix, [np.zeros(len(matrix[0]))]))
@@ -168,15 +167,16 @@ def factorization(matrix):
             result = 1
             for j in indexes:
                 result *= b_num[j]
-            bro = factors_multiplication(indexes, B_nums, B_nums_factors)
-            if bro == -1:
+            mul_num = factors_multiplication(indexes, B_nums, B_nums_factors)
+            if mul_num == -1:
                 continue
-            a = gmpy2.gcd(N, result - bro)
+            a = gmpy2.gcd(N, result - mul_num)
             if a != 1 and a != N:
                 first_factor = a
                 second_factor = N // a
                 break
     return first_factor, second_factor
+
 
 if __name__ == '__main__':
     #инициализация
